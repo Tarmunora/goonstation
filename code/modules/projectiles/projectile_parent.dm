@@ -552,7 +552,7 @@ datum/projectile
 		shot_sound = 'sound/weapons/Taser.ogg' // file location for the sound you want it to play
 		shot_sound_extrarange = 0 //should the sound have extra range?
 		shot_volume = 100		 // How loud the sound plays (thank you mining drills for making this a needed thing)
-		shot_number = 0          // How many projectiles should be fired, each will cost the full cost
+		shot_number = 1          // How many projectiles should be fired, each will cost the full cost
 		shot_delay = 1          // Time between shots in a burst.
 		damage_type = D_KINETIC  // What is our damage type
 		hit_type = null          // For blood system damage - DAMAGE_BLUNT, DAMAGE_CUT and DAMAGE_STAB

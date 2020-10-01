@@ -339,7 +339,7 @@
 
 	build(amount, var/obj/machinery/nanofab/owner)
 		for(var/i=0, i<amount, i++)
-			var/obj/item/gun/bow/newObj = new()
+			var/obj/item/gun/bow_parent/bow/newObj = new()
 			var/obj/item/source = getObjectByPartName("Bow")
 			if(source && source.material)
 				newObj.setMaterial(source.material)

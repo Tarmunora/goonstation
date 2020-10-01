@@ -242,12 +242,12 @@
 // Aiming bow action.
 /datum/action/bar/aim
 	duration = -1
-	var/obj/item/gun/bow/bow = null
+	var/obj/item/gun/bow_parent/bow/bow = null
 	var/progress = 0
 	var/progression = 0.34
 	var/moved = 0
 
-	New(var/mob/M, var/obj/item/gun/bow/B)
+	New(var/mob/M, var/obj/item/gun/bow_parent/bow/B)
 		owner = M
 		bow = B
 		..()
@@ -585,18 +585,15 @@
 			take_bleeding_damage(A, null, round(src.power / 2), src.hit_type)
 
 
-/obj/item/gun/bow
+/obj/item/gun/bow_parent
 	name = "bow"
 	icon = 'icons/obj/items/items.dmi'
 	inhand_image_icon = 'icons/mob/inhand/hand_weapons.dmi'
 	icon_state = "bow"
 	item_state = "bow"
 	var/obj/item/arrow/loaded = null
-	var/datum/action/bar/aim/aim = null
 	current_projectile = new/datum/projectile/arrow
-	spread_angle = 40
 	force = 5
-	can_dual_wield = 0
 	contraband = 0
 
 	proc/loadFromQuiver(var/mob/user)
@@ -621,61 +618,21 @@
 		return
 
 	attack_hand(var/mob/user)
-		if (!loaded && user.is_in_hands(src))
-			loadFromQuiver(user)
-
 		if (loaded && user.is_in_hands(src))
 			user.put_in_hand_or_drop(loaded)
-			boutput(user, "<span class='notice'>You unload the arrow from the bow.</span>")
+			boutput(user, "<span class='notice'>You unload the arrow from the [src].</span>")
 			overlays.len = 0
 			loaded = null
 		else
 			..()
 
-
-
-	attack(var/mob/target, var/mob/user)
-		user.lastattacked = target
-		target.lastattacker = user
-		target.lastattackertime = world.time
-
-
-	//absolutely useless as an attack but removing it causes bugs, replaced fire point blank which had issues with the way arrow damage is calculated.
-		if(isliving(target))
-			if(loaded)
-				if(loaded.afterattack(target,user,1))
-					loaded =null;//arrow isnt consumed otherwise, for some inexplicable reason.
-			else
-				boutput(user, "<span class='alert'>Nothing is loaded in the bow!</span>")
-		else
-			..()
-
-	#ifdef DATALOGGER
-			game_stats.Increment("violence")
-	#endif
-			return
-
-	/*
-	onMouseDown(atom/target,location,control,params)
-		var/mob/user = usr
-		var/list/parameters = params2list(params)
-		if(ismob(target.loc) || istype(target, /obj/screen)) return
-		if(parameters["left"])
-			if (!aim && !loaded)
-				loadFromQuiver(user)
-
-			if (!aim && loaded)
-				aim = new(user, src)
-				actions.start(aim, user)
-		return
-	*/
-
 	attack_self(var/mob/user)
-		return
+		if (!loaded)
+			loadFromQuiver(user)
 
 	process_ammo(var/mob/user)
 		if (!loaded)
-			boutput(user, "<span class='alert'>Nothing is loaded in the bow!</span>")
+			boutput(user, "<span class='alert'>Nothing is loaded in the [src]!</span>")
 			return 0
 		overlays.len = 0
 		var/obj/item/implant/projectile/arrow/A = new
@@ -700,6 +657,126 @@
 
 	canshoot()
 		return loaded != null
+
+	attackby(var/obj/item/arrow/I, var/mob/user)
+		if (!istype(I))
+			return ..()
+		if (loaded)
+			boutput(user, "<span class='alert'>An arrow is already loaded onto the [src].</span>")
+
+		if(I.amount > 1)
+			var/obj/item/arrow/C = I.clone(src)
+			I.change_stack_amount(-1)
+			overlays += C
+			loaded = C
+		else
+			overlays += I
+			user.u_equip(I)
+			loaded = I
+			I.set_loc(src)
+
+
+/obj/item/gun/bow_parent/crossbow
+	name = "xbow"
+	icon = 'icons/obj/items/gun.dmi'
+	icon_state = "crossbow"
+	item_state = "crossbow"
+	var/drawn = 0
+
+	proc/draw(mob/user)
+		if(!drawn)
+			actions.start(new/datum/action/bar/xbow_draw(user, src), user)
+
+	attack_self(var/mob/user)
+		draw(user)
+		return
+
+	process_ammo(mob/user)
+		. = ..()
+		current_projectile.power *= 1.5
+		drawn = 0
+
+	canshoot()
+		boutput(world, "[..()], [drawn]")
+		return ..() && drawn
+
+	attackby(var/obj/item/arrow/I, var/mob/user)
+		if(!istype(I))
+			return ..()
+		else if(!drawn)
+			boutput(user, "<span class='alert'>The [src] must be drawn before you can load an arrow.</span>")
+			return
+		else
+			return ..()
+
+	pixelaction(atom/target, params, mob/user, reach)
+		if(ismob(target.loc) || istype(target, /obj/screen)) return
+		if(!drawn)
+			draw(user)
+			return
+		if(!loaded)
+			loadFromQuiver(user)
+			return
+		. = ..()
+
+/datum/action/bar/xbow_draw
+	duration = 20
+	var/obj/item/gun/bow_parent/crossbow/bow = null
+	interrupt_flags = INTERRUPT_MOVE | INTERRUPT_STUNNED | INTERRUPT_ACTION
+
+
+	New(var/mob/M, var/obj/item/gun/bow_parent/crossbow/B)
+		owner = M
+		bow = B
+		..()
+
+	onStart()
+		..()
+		playsound(get_turf(owner), 'sound/effects/bow_aim.ogg', 75, 1)
+		owner.visible_message("<span class='alert'>[owner] pulls the string on [bow]!</span>", "<span class='notice'>You pull the string on [bow]!</span>")
+
+	onInterrupt(flag)
+		..()
+		boutput(owner, "<span class='alert'>Your attempt to draw the [bow] was interrupted!</span>")
+
+
+	onEnd()
+		boutput(owner, "<span class='alert'>You finish drawing the string.</span>")
+		if (bow)
+			bow.drawn = 1
+			if(!bow.loaded)
+				bow.loadFromQuiver(owner)
+		..()
+
+	disposing()
+		bow = null
+		. = ..()
+
+/obj/item/gun/bow_parent/bow
+	var/datum/action/bar/aim/aim = null
+	spread_angle = 40
+	can_dual_wield = 0
+
+	attack(var/mob/target, var/mob/user)
+		user.lastattacked = target
+		target.lastattacker = user
+		target.lastattackertime = world.time
+
+
+	//absolutely useless as an attack but removing it causes bugs, replaced fire point blank which had issues with the way arrow damage is calculated.
+		if(isliving(target))
+			if(loaded)
+				if(loaded.afterattack(target,user,1))
+					loaded =null;//arrow isnt consumed otherwise, for some inexplicable reason.
+			else
+				boutput(user, "<span class='alert'>Nothing is loaded in the [src]!</span>")
+		else
+			..()
+
+	#ifdef DATALOGGER
+			game_stats.Increment("violence")
+	#endif
+			return
 
 	pixelaction(atom/target, params, mob/user, reach)
 		/*
@@ -736,20 +813,3 @@
 				spread_angle = (1 - aim.progress) * spread_base
 				aim.state = ACTIONSTATE_FINISH
 			..()
-
-	attackby(var/obj/item/arrow/I, var/mob/user)
-		if (!istype(I))
-			return
-		if (loaded)
-			boutput(user, "<span class='alert'>An arrow is already loaded onto the bow.</span>")
-
-		if(I.amount > 1)
-			var/obj/item/arrow/C = I.clone(src)
-			I.change_stack_amount(-1)
-			overlays += C
-			loaded = C
-		else
-			overlays += I
-			user.u_equip(I)
-			loaded = I
-			I.set_loc(src)
