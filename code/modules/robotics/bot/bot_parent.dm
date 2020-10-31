@@ -20,6 +20,22 @@
 	var/mob/emagger = null
 	var/text2speech = 0 // dectalk!
 	p_class = 2
+	/// How well can projectiles punch through the bot and keep going? 100 for "typically always", 0 for "shouldn't ever"
+	var/piercability = 25
+	/// How much damage must a projectile do to have a chance at piercing through the mob?
+	var/pierce_threshold = 0
+	/// Multiplies all incoming damage
+	var/vulnerability_general = 1
+	/// Multiplies kinetic projectile damage
+	var/vulnerability_kinetic = 1
+	/// Multiplies piercing projectile damage -- unrelated to projeciles piercing *through* them
+	var/vulnerability_piercing = 2
+	/// Multiplies energy projectile damage
+	var/vulnerability_energy = 1
+	/// Multiplies brute force hit-by-thing damage
+	var/vulnerability_brute = 0.5
+	/// Multiplies burning hit-by-thing damage
+	var/vulnerability_burn = 0.75
 
 	power_change()
 		return
@@ -31,7 +47,7 @@
 
 	New()
 		..()
-
+		src.AddComponent(/datum/component/mob_projectile_interaction/dense_to_projectiles, src.piercability, 0, src.pierce_threshold)
 		if(!no_camera)
 			src.cam = new /obj/machinery/camera(src)
 			src.cam.c_tag = src.name
@@ -46,29 +62,38 @@
 
 	attackby(obj/item/W as obj, mob/user as mob)
 		user.lastattacked = src
+		src.add_fingerprint(user)
 		attack_particle(user,src)
 		hit_twitch(src)
+		step_to(src, (get_step_away(src,user)))
 		if (W.hitsound)
 			playsound(src,W.hitsound,50,1)
+		var/hit_damage = W.force * src.vulnerability_general
+		switch(W.hit_type)
+			if (DAMAGE_BURN)
+				src.health -= hit_damage * src.vulnerability_burn
+			else
+				src.health -= hit_damage * src.vulnerability_brute
+		if (src.health <= 0)
+			src.explode()
 		..()
 
 	// Generic default. Override for specific bots as needed.
 	bullet_act(var/obj/projectile/P)
 		if (!P || !istype(P))
 			return
-
 		hit_twitch(src)
 
 		var/damage = 0
-		damage = round(((P.power/4)*P.proj_data.ks_ratio), 1.0)
+		damage = round((((P.power/4)*P.proj_data.ks_ratio) * src.vulnerability_general), 1.0)
 
 		if (P.proj_data.damage_type == D_KINETIC)
-			src.health -= damage
+			src.health -= (damage * src.vulnerability_kinetic)
 		else if (P.proj_data.damage_type == D_PIERCING)
-			src.health -= (damage*2)
+			src.health -= (damage * src.vulnerability_piercing)
 		else if (P.proj_data.damage_type == D_ENERGY)
-			src.health -= damage
-
+			src.health -= (damage * src.vulnerability_energy)
+		SEND_SIGNAL(src, COMSIG_ATOM_PROJ_COLLIDE, P)
 		if (src.health <= 0)
 			src.explode()
 		return

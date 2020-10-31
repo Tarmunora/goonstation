@@ -100,6 +100,8 @@
 	var/baton_charged /// Set by the stun action bar if the target isnt in range, grants a brief window for a free zap next time they try to attack
 	var/baton_charge_duration = BATON_CHARGE_DURATION /// How long these batons hold a charge
 	var/cuffing /// So we dont try to cuff someone while we're cuffing someone
+	piercability = 80
+	pierce_threshold = 25
 
 	disposing()
 		if(mover)
@@ -366,18 +368,10 @@ Report Arrests: <A href='?src=\ref[src];operation=report'>[report_arrests ? "On"
 			if (src.health < initial(health))
 				src.health = initial(health)
 				src.visible_message("<span class='alert'>[user] repairs [src]!</span>", "<span class='alert'>You repair [src].</span>")
-		else
-			switch(W.hit_type)
-				if (DAMAGE_BURN)
-					src.health -= W.force * 0.75
-				else
-					src.health -= W.force * 0.5
-			if (src.health <= 0)
-				src.explode()
-			else if (W.force && (!iscarbon(src.target) || (src.mode != SECBOT_HUNT)))
-				src.target = user
-				src.mode = SECBOT_HUNT
-			..()
+		else if (W.force)
+			src.visible_message("<span class='alert'>[user] hits [src] with [W]!</span>")
+			src.engage_target(user) // Melee, draw aggro!
+			. = ..()
 
 	proc/make_tacticool()
 		src.tacticool = 1
@@ -427,15 +421,20 @@ Report Arrests: <A href='?src=\ref[src];operation=report'>[report_arrests ? "On"
 
 		return 0
 
-	proc/charge_baton()
-		src.baton_charged = TRUE
-		src.overlays += image('icons/effects/electile.dmi', "6c")
-		SPAWN_DBG(src.baton_charge_duration)
-			src.baton_charged = FALSE
-			src.overlays -= image('icons/effects/electile.dmi', "6c")
+	proc/charge_baton(var/mode = TRUE)
+		if (mode == src.baton_charged) return 1
+		switch(mode)
+			if (TRUE)
+				src.baton_charged = TRUE
+				src.overlays += image('icons/effects/electile.dmi', "6c")
+				SPAWN_DBG(src.baton_charge_duration)
+					src.charge_baton(FALSE)
+			if (FALSE)
+				src.baton_charged = FALSE
+				src.overlays -= image('icons/effects/electile.dmi', "6c")
 
 	proc/baton_attack(var/mob/living/carbon/M, var/force_attack = 0)
-		if(force_attack || baton_charged)
+		if(force_attack || src.baton_charged)
 			src.icon_state = "secbot-c[src.emagged >= 2 ? "-wild" : null]"
 			var/maxstuns = 4
 			var/stuncount = (src.emagged >= 2) ? rand(5,10) : 1
@@ -468,6 +467,7 @@ Report Arrests: <A href='?src=\ref[src];operation=report'>[report_arrests ? "On"
 
 			SPAWN_DBG(0.2 SECONDS)
 				src.icon_state = "secbot[src.on][(src.on && src.emagged >= 2) ? "-wild" : null]"
+				src.charge_baton(FALSE)
 			if (src.target.getStatusDuration("weakened"))
 				src.mode = SECBOT_PREP_ARREST
 				src.anchored = 1
@@ -774,19 +774,24 @@ Report Arrests: <A href='?src=\ref[src];operation=report'>[report_arrests ? "On"
 				src.threatlevel = src.assess_perp(C)
 			if (!src.threatlevel)
 				continue
-
 			else if (src.threatlevel >= 4)
-				src.target = C
-				src.oldtarget_name = C.name
-				src.speak("Level [src.threatlevel] infraction alert!")
-				playsound(src.loc, pick('sound/voice/bcriminal.ogg', 'sound/voice/bjustice.ogg', 'sound/voice/bfreeze.ogg'), 50, 0)
-				src.visible_message("<b>[src]</b> points at [C.name]!")
-				mode = SECBOT_HUNT
-				weeoo()
-				process()	// ensure bot quickly responds to a perp
+				src.engage_target(C)
 				break
 			else
 				continue
+
+	proc/engage_target(var/mob/living/carbon/C)
+		if(!C) return
+		src.target = C
+		src.oldtarget_name = C.name
+		src.speak("Level [src.threatlevel] infraction alert!")
+		playsound(src.loc, pick('sound/voice/bcriminal.ogg', 'sound/voice/bjustice.ogg', 'sound/voice/bfreeze.ogg'), 50, 0)
+		src.visible_message("<b>[src]</b> points at [C.name]!")
+		mode = SECBOT_HUNT
+		weeoo()
+		SPAWN_DBG(0)
+			process()	// ensure bot quickly responds to a perp
+		return
 
 	proc/weeoo()
 		if(weeooing)
@@ -915,25 +920,11 @@ Report Arrests: <A href='?src=\ref[src];operation=report'>[report_arrests ? "On"
 			M:set_loc(T)
 
 	bullet_act(var/obj/projectile/P)
-		var/damage = 0
-		damage = round(((P.power/4)*P.proj_data.ks_ratio), 1.0)
-
-		if(P.proj_data.damage_type == D_KINETIC)
-			src.health -= damage
-		else if(P.proj_data.damage_type == D_PIERCING)
-			src.health -= (damage*2)
-		else if(P.proj_data.damage_type == D_ENERGY)
-			src.health -= damage
-
-		if (src.health <= 0)
-			src.explode()
-			return
-
+		. = ..()
 		if (ismob(P.shooter))
 			var/mob/living/M = P.shooter
-			if (P && iscarbon(M) && (!iscarbon(src.target) || (src.mode != SECBOT_HUNT)))
-				src.target = M
-				src.mode = SECBOT_HUNT
+			if (P && iscarbon(M)) // Prioritize people shooting you -- property damage is a crime!
+				src.engage_target(M)
 		return
 
 	speak(var/message)

@@ -14,6 +14,7 @@
 	soundproofing = 0
 	on = 1
 	locked = 1
+	health = 40
 	var/atom/movable/load = null		// the loaded crate (usually)
 
 	var/beacon_freq = 1445
@@ -151,10 +152,9 @@
 				user.visible_message("<span class='alert'>[user] knocks [load] off [src] with \the [I]!</span>", "<span class='alert'>You knock [load] off [src] with \the [I]!</span>")
 			else
 				boutput(user, "You hit [src] with \the [I] but to no effect.")
-		else
-			..()
-		return
-
+		else if (I.force)
+			src.visible_message("<span class='alert'>[user] hits [src] with [I]!</span>")
+			. = ..()
 
 	ex_act(var/severity)
 		unload(0)
@@ -190,6 +190,16 @@
 
 	attack_hand(var/mob/user, params)
 		interacted(user, 0, params)
+
+	explode()
+		if(src.exploding) return
+		src.exploding = 1
+		src.audible_message("<span class='alert'><B>[src] blows apart!</B></span>")
+		var/turf/T = get_turf(src)
+		robogibs(T)
+		elecflash(src, radius=1, power=3, exclude_center = 0)
+		qdel(src)
+		..()
 
 	proc/interacted(var/mob/user, var/ai=0, params)
 		var/dat

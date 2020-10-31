@@ -46,6 +46,7 @@
 	var/wy = 0
 
 	var/internal_speed = null // experimental
+	/// Number of turfs the projectile can penetrate
 	var/pierces_left = 0
 	var/ticks_until_can_hit_mob = 0
 	var/goes_through_walls = 0
@@ -163,12 +164,13 @@
 					playsound(A, proj_data.hit_object_sound, 60, 0.5)
 				die()
 		else if (ismob(A))
-			if(pierces_left != 0) //try to hit other targets on the tile
+			if(src.proj_data.pierce_flag != PROJ_NEVER_PIERCES) //try to hit other targets on the tile
 				var/turf/T = get_turf(A)
 				for (var/mob/X in T.contents)
 					if (X != A)
+						src.power = src.proj_data.get_power(src, A) // Could've changed!
 						X.bullet_act(src)
-						pierces_left--
+
 						//holy duplicate code batman. If someone can come up with a better solution, be my guest
 						if (src.proj_data) //ZeWaka: Fix for null.ticks_between_mob_hits
 							if (proj_data.hit_mob_sound)
@@ -189,7 +191,7 @@
 								var/mob/living/carbon/human/npc/monkey/M = X
 								M.shot_by(shooter)
 
-					if(pierces_left == 0)
+					if(src.proj_data.power <= 0)
 						break
 			if (src.proj_data) //ZeWaka: Fix for null.ticks_between_mob_hits
 				if (proj_data.hit_mob_sound)
@@ -209,19 +211,17 @@
 					var/mob/living/carbon/human/npc/monkey/M = A
 					M.shot_by(shooter)
 
-			if (pierces_left == 0)
+			if (src.proj_data.pierce_flag == PROJ_ALWAYS_PIERCES_SPECIAL && pierces_left-- <= 0)
 				die()
-			else
-				pierces_left--
 
 		else if (isobj(A))
-			if (A.density && !goes_through_walls && !(sigreturn & PROJ_PASSOBJ))
-				if (iscritter(A))
-					if (proj_data && proj_data.hit_mob_sound)
-						playsound(A.loc, proj_data.hit_mob_sound, 60, 0.5)
-				else
-					if (proj_data && proj_data.hit_object_sound)
-						playsound(A.loc, proj_data.hit_object_sound, 60, 0.5)
+			if (iscritter(A))
+				if (proj_data && proj_data.hit_mob_sound)
+					playsound(A.loc, proj_data.hit_mob_sound, 60, 0.5)
+			else
+				if (proj_data && proj_data.hit_object_sound)
+					playsound(A.loc, proj_data.hit_object_sound, 60, 0.5)
+			if((A.density && !goes_through_walls && !(sigreturn & PROJ_PASSOBJ)) || src.proj_data.power <= 0)
 				die()
 		else
 			die()
@@ -553,6 +553,8 @@ datum/projectile
 		                         // When firing in a straight line, I was getting doubled falloff values on the fourth tile from the shooter, as well as others further along. -Tarm
 		ks_ratio = 1.0           /* Kill/Stun ratio, when it hits a mob the damage/stun is based upon this and the power
 		                            eg 1.0 will cause damage = to power while 0.0 would cause just stun = to power */
+		/// Adds/subs this number from the power calculation, if we need to change the projectile's damage in-flight
+		var/power_mod = 0
 
 		sname = "stun"           // name of the projectile setting, used when you change a guns setting
 		shot_sound = 'sound/weapons/Taser.ogg' // file location for the sound you want it to play
@@ -606,6 +608,10 @@ datum/projectile
 	var/pierces = 0
 	var/ticks_between_mob_hits = 0
 	var/is_magical = 0              //magical projectiles, i.e. the chaplain is immune to these
+	/// Special considerations regarding the projectile piercing the thing it hits
+	var/pierce_flag = PROJ_NEVER_PIERCES
+	/// If the pierce flag is PROJ_ALWAYS_PIERCES_SPECIAL, multiply projectile damage by this per thing hit
+	var/pierce_special_dmg_mult = 1
 	// var/type = "K"					//3 types, K = Kinetic, E = Energy, T = Taser
 
 	proc
@@ -644,6 +650,7 @@ datum/projectile
 		tick(var/obj/projectile/O)
 			return
 		on_launch(var/obj/projectile/O)
+			src.power_mod = 0
 			return
 		on_pointblank(var/obj/projectile/O, var/mob/target)
 			return
@@ -656,7 +663,7 @@ datum/projectile
 			.= 1
 
 		get_power(obj/projectile/P, atom/A)
-			return P.initial_power - max(0, (P.travelled/32 - src.dissipation_delay))*src.dissipation_rate
+			return (P.initial_power - max(0, (P.travelled/32 - src.dissipation_delay))*src.dissipation_rate) + src.power_mod
 
 // WOO IMPACT RANGES
 // Meticulously calculated by hand.

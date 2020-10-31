@@ -195,18 +195,9 @@
 				if(W:try_weld(user, 1))
 					src.health = initial(src.health)
 					src.visible_message("<span class='alert'><b>[user]</b> repairs the damage on [src].</span>")
-
-		else
-			..()
-			switch(W.hit_type)
-				if (DAMAGE_BURN)
-					src.health -= W.force * 0.75
-				else
-					src.health -= W.force * 0.5
-			if (src.health <= 0)
-				src.explode()
-
-		return
+		else if (W.force)
+			src.visible_message("<span class='alert'>[user] hits [src] with [W]!</span>")
+			. = ..()
 
 	process()
 		if (!src.on)

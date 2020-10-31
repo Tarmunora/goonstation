@@ -47,7 +47,7 @@ toxic - poisons
 	max_range = 5 //super short. about 4 tile max range
 	cost = 50
 	hit_ground_chance = 100 //no escape
-	pierces = -1 //no limits
+	pierce_flag = PROJ_ALWAYS_PIERCES
 	goes_through_walls = 1
 	window_pass = 1
 	ticks_between_mob_hits = 1

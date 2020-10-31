@@ -1846,6 +1846,7 @@ var/global/icon/human_static_base_idiocy_bullshit_crap = icon('icons/mob/human.d
 		if (P.shooter)
 			src.lastattacker = P.shooter
 			src.lastattackertime = world.time
+	SEND_SIGNAL(src, COMSIG_ATOM_PROJ_COLLIDE, P)
 	return 1
 
 /mob/living/attackby(obj/item/W, mob/M)

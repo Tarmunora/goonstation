@@ -61,6 +61,9 @@
 /// when an AM moves (user, previous_loc, direction)
 #define COMSIG_MOVABLE_MOVED "mov_moved"
 
+/// when an atom gets hit by a projectile
+#define COMSIG_ATOM_PROJ_COLLIDE "atom_hitby_proj"
+
 
 // ---- item signals ----
 

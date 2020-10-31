@@ -159,6 +159,7 @@
 	reclaim_fail = 15
 	stability_loss = -5
 	icon_state  = "bad"
+	var/old_pierce
 
 	OnAdd()
 		..()
@@ -166,6 +167,8 @@
 			var/mob/living/carbon/human/H = owner
 			H.set_body_icon_dirty()
 			H.unlock_medal("Space Ham", 1)
+			old_pierce = H.piercability
+			H.piercability += 20
 			APPLY_MOVEMENT_MODIFIER(H, /datum/movement_modifier/spaceham, src.type)
 
 	OnRemove()

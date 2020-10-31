@@ -42,6 +42,7 @@ toxic - poisons
 	hit_type = DAMAGE_CUT
 	//With what % do we hit mobs laying down
 	hit_ground_chance = 33
+	pierce_flag = PROJ_PIERCES
 	//Can we pass windows
 	window_pass = 0
 	implanted = /obj/item/implant/projectile
@@ -64,6 +65,7 @@ toxic - poisons
 	shot_sound = 'sound/weapons/9x19NATO.ogg' //quieter when fired from a silenced weapon!
 	damage_type = D_KINETIC
 	hit_type = DAMAGE_CUT
+	pierce_flag = PROJ_NEVER_PIERCES
 	implanted = /obj/item/implant/projectile/bullet_22
 	casing = /obj/item/casing/small
 	caliber = 0.22
@@ -653,7 +655,7 @@ toxic - poisons
 	caliber = 0.787 //20mm
 	icon_turf_hit = "bhole-large"
 	casing = /obj/item/casing/cannon
-	pierces = 4
+	pierce_special_dmg_mult = 0.20 // -20% damage per thing hit, can penetrate up to 4 people in a row
 	shot_sound_extrarange = 1
 
 
@@ -674,8 +676,7 @@ toxic - poisons
 
 			var/turf/T = get_turf(hit)
 			new /obj/effects/rendersparks (T)
-			var/impact = clamp(1,3, proj.pierces_left % 4)
-			if(proj.pierces_left <= 1 )
+			if(proj.power <= proj.initial_power * proj.proj_data.pierce_special_dmg_mult) // less than one pierce left
 				new /obj/effects/explosion/dangerous(T)
 				new /obj/effects/explosion/dangerous(get_step(T, dirflag))
 				new /obj/effects/explosion/dangerous(get_step(get_step(T, dirflag), dirflag))
@@ -696,7 +697,7 @@ toxic - poisons
 					for (var/i in 1 to 3)
 						targetorgan = pick("left_lung", "heart", "right_lung", "left_kidney", "right_kidney", "liver", "stomach", "intestines", "spleen", "pancreas", "appendix")
 						H.organHolder.damage_organ(proj.power/H.get_ranged_protection(), 0, 0,  targetorgan)
-				M.ex_act(impact)
+				M.ex_act(1)
 
 
 
@@ -714,7 +715,7 @@ toxic - poisons
 					W.smash()
 
 				else
-					O.ex_act(impact)
+					O.ex_act(1)
 
 			if(hit && isturf(hit))
 				T.throw_shrapnel(T, 1, 1)

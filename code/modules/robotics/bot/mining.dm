@@ -84,7 +84,6 @@
 	togglePowerSwitch()
 
 /obj/machinery/bot/mining/attackby(var/obj/item/W , mob/user as mob)
-	src.add_fingerprint(user)
 	//////////////////////
 	///Emagged code///////
 	//////////////////////
@@ -96,8 +95,11 @@
 		src.oldtarget = null
 		src.anchored = 0
 		src.emagged = 1
-		if(!src.on) 
+		if(!src.on)
 			turnOn()
+	else if (W.force)
+		src.visible_message("<span class='alert'>[user] hits [src] with [W]!</span>")
+		. = ..()
 
 /obj/machinery/bot/mining/process()
 	if(!src.on) return
@@ -138,7 +140,7 @@
 				pointAtTarget()
 				break
 	return
-	
+
 /obj/machinery/bot/mining/proc/pointAtTarget()
 	if (src.target)
 		for (var/mob/O in hearers(src, null))
@@ -149,7 +151,7 @@
 		SPAWN_DBG (20)
 			P.invisibility = 101
 			qdel(P)
-	
+
 /obj/machinery/bot/mining/proc/buildPath()
 	if (!isturf(src.loc)) return
 	if (!target) return
@@ -233,23 +235,23 @@
 	onUpdate()
 		..()
 		if(!checkStillValid()) return
-	
+
 	onEnd()
-		if(checkStillValid()) 
+		if(checkStillValid())
 			target.damage_asteroid(bot.diglevel)
 			if(!istype(target, /turf/simulated/wall/asteroid/))
 				bot.target = null
 		if(bot != null)
 			bot.stopDiggingEffects()
 		..()
-	
+
 	onDelete()
 		..()
 		if(bot != null)
 			bot.stopDiggingEffects()
 
 	proc/checkStillValid()
-		if(bot == null || target == null) 
+		if(bot == null || target == null)
 			interrupt(INTERRUPT_ALWAYS)
 			return false
 		if(!bot.on || !istype(target, /turf/simulated/wall/asteroid/))
@@ -350,5 +352,5 @@
 			else
 				boutput(user,  "It's not ready for that part yet.")
 				return
-		else 
+		else
 			..()

@@ -311,17 +311,9 @@
 		src.updateUsrDialog()
 		return
 
-	else
-		switch(W.hit_type)
-			if (DAMAGE_BURN)
-				src.health -= W.force * 0.75
-			else
-				src.health -= W.force * 0.5
-		if (src.health <= 0)
-			src.explode()
-		else if (W.force)
-			step_to(src, (get_step_away(src,user)))
-		..()
+	else if (W.force)
+		src.visible_message("<span class='alert'>[user] hits [src] with [W]!</span>")
+		. = ..()
 
 /obj/machinery/bot/medbot/proc/point(var/mob/living/carbon/target) // I stole this from the chefbot <3 u marq ur a beter codr then me
 	visible_message("<b>[src]</b> points at [target]!")

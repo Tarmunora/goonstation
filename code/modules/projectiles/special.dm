@@ -109,7 +109,7 @@ ABSTRACT_TYPE(/datum/projectile/special)
 	dissipation_rate = 1
 	dissipation_delay = 3
 	damage_type = D_ENERGY
-	pierces = -1
+	pierce_flag = PROJ_ALWAYS_PIERCES
 	ticks_between_mob_hits = 10
 
 /datum/projectile/special/wallhax
@@ -348,7 +348,7 @@ ABSTRACT_TYPE(/datum/projectile/special)
 	projectile_speed = 28
 	impact_range = 32
 	caliber = 40
-	pierces = -1
+	pierce_flag = PROJ_ALWAYS_PIERCES
 	goes_through_walls = 1
 	color_red = 1
 	color_green = 1
