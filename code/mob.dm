@@ -229,7 +229,7 @@
 	/// How easy is it for a projectile to punch straight through the target? 0 for "never should", 100 for "always should"
 	var/piercability = 50
 	/// How much damage must a projectile do to have a chance at piercing through the mob?
-	var/pierce_threshold = 0
+	var/pierce_threshold = 20
 
 //obj/item/setTwoHanded calls this if the item is inside a mob to enable the mob to handle UI and hand updates as the item changes to or from 2-hand
 /mob/proc/updateTwoHanded(var/obj/item/I, var/twoHanded = 1)

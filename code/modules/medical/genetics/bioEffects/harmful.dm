@@ -168,7 +168,7 @@
 			H.set_body_icon_dirty()
 			H.unlock_medal("Space Ham", 1)
 			old_pierce = H.piercability
-			H.piercability += 20
+			H.piercability *= 0.8
 			APPLY_MOVEMENT_MODIFIER(H, /datum/movement_modifier/spaceham, src.type)
 
 	OnRemove()
@@ -176,6 +176,7 @@
 		if (ishuman(owner))
 			var/mob/living/carbon/human/H = owner
 			H.set_body_icon_dirty()
+			H.piercability = old_pierce
 			REMOVE_MOVEMENT_MODIFIER(H, /datum/movement_modifier/spaceham, src.type)
 
 	OnLife()

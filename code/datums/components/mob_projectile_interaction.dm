@@ -31,7 +31,7 @@
 			return
 		var/damage = B.get_power(P, hit)
 		if ((damage * B.ks_ratio) < src.threshold)
-			B.power_mod = -INFINITY
+			P.die()
 			return
 
 		var/rangedprot = 1
@@ -39,13 +39,13 @@
 			var/mob/getrangedprot = hit
 			rangedprot = getrangedprot.get_ranged_protection()
 
-		var/pierce_chance = clamp((src.mob_piercability * 0.01) * ((damage * B.ks_ratio * (B.damage_type == D_PIERCING ? PROJ_DMG_TYPE_PIERCE_PENALTY : 1)) * (1 / rangedprot)), 0, 100)
+		var/pierce_chance = clamp((src.mob_piercability * 0.01) * ((damage * B.ks_ratio * (B.damage_type == D_PIERCING ? 1 : PROJ_DMG_TYPE_PIERCE_PENALTY)) * (1 / rangedprot)), 0, 100)
 
 		if(prob(pierce_chance))
 			/// Shot loses a bit of damage as it punches through the target
 			B.power_mod -= ((damage * ((100 - pierce_chance) * 0.01)) + (P.initial_power * PROJ_PIERCE_DMG_SUBTRACTOR))
 		else
-			B.power_mod = -INFINITY
+			P.die()
 
 /datum/component/mob_projectile_interaction/dense_to_projectiles/UnregisterFromParent()
 	UnregisterSignal(parent, COMSIG_ATOM_PROJ_COLLIDE)

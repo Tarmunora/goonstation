@@ -28,7 +28,7 @@
 
 	dna_to_absorb = 0 //robots dont have DNA for fuck sake
 
-	piercability = 100
+	piercability = 20
 
 
 	//voice_type = "robo"

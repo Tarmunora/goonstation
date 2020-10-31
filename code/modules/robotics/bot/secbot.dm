@@ -100,7 +100,7 @@
 	var/baton_charged /// Set by the stun action bar if the target isnt in range, grants a brief window for a free zap next time they try to attack
 	var/baton_charge_duration = BATON_CHARGE_DURATION /// How long these batons hold a charge
 	var/cuffing /// So we dont try to cuff someone while we're cuffing someone
-	piercability = 80
+	piercability = 20
 	pierce_threshold = 25
 
 	disposing()

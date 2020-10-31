@@ -21,9 +21,9 @@
 	var/text2speech = 0 // dectalk!
 	p_class = 2
 	/// How well can projectiles punch through the bot and keep going? 100 for "typically always", 0 for "shouldn't ever"
-	var/piercability = 25
+	var/piercability = 50
 	/// How much damage must a projectile do to have a chance at piercing through the mob?
-	var/pierce_threshold = 0
+	var/pierce_threshold = 5
 	/// Multiplies all incoming damage
 	var/vulnerability_general = 1
 	/// Multiplies kinetic projectile damage
