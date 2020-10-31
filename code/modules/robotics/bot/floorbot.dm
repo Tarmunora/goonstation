@@ -133,7 +133,18 @@ text("<A href='?src=\ref[src];operation=make'>[src.maketiles ? "Yes" : "No"]</A>
 	return
 
 /obj/machinery/bot/floorbot/attackby(var/obj/item/W , mob/user as mob)
-	if (istype(W, /obj/item/tile))
+	//Regular ID
+	if (istype(W, /obj/item/device/pda2) && W:ID_card)
+		W = W:ID_card
+	if (istype(W, /obj/item/card/id))
+		if (src.allowed(usr))
+			src.locked = !src.locked
+			boutput(user, "You [src.locked ? "lock" : "unlock"] the [src] behaviour controls.")
+		else
+			boutput(user, "The [src] doesn't seem to accept your authority.")
+		src.updateUsrDialog()
+
+	else if (istype(W, /obj/item/tile))
 		var/obj/item/tile/T = W
 		if (src.amount >= max_tiles)
 			return
@@ -149,16 +160,12 @@ text("<A href='?src=\ref[src];operation=make'>[src.maketiles ? "Yes" : "No"]</A>
 			qdel(T)
 		boutput(user, "<span class='alert'>You load [loaded] tiles into the floorbot. He now contains [src.amount] tiles!</span>")
 		src.updateicon()
-	//Regular ID
-	if (istype(W, /obj/item/device/pda2) && W:ID_card)
-		W = W:ID_card
-	if (istype(W, /obj/item/card/id))
-		if (src.allowed(usr))
-			src.locked = !src.locked
-			boutput(user, "You [src.locked ? "lock" : "unlock"] the [src] behaviour controls.")
-		else
-			boutput(user, "The [src] doesn't seem to accept your authority.")
-		src.updateUsrDialog()
+
+	else if (W.force)
+		src.visible_message("<span class='alert'>[user] hits [src] with [W]!</span>")
+		. = ..()
+
+
 
 
 

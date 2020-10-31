@@ -61,6 +61,9 @@
 /// when an AM moves (user, previous_loc, direction)
 #define COMSIG_MOVABLE_MOVED "mov_moved"
 
+/// when an atom gets hit by a projectile
+#define COMSIG_ATOM_PROJ_COLLIDE "atom_hitby_proj"
+
 
 // ---- item signals ----
 
@@ -83,6 +86,12 @@
 /// When an item is used in-hand
 #define COMSIG_ITEM_ATTACK_SELF "itm_atk_self"
 
+// ---- implant signals ----
+/// When implanted
+#define COMSIG_IMPLANT_IMPLANTED "implant_implanted"
+/// When removed
+#define COMSIG_IMPLANT_REMOVED "implant_removed"
+
 // ---- tooltip signals ----
 
 /// Append to the end of the blocking section of tooltip (list/tooltip)
@@ -101,9 +110,6 @@
 
 // ---- human signals ----
 
-/// When a human Life tick occurs
-#define COMSIG_HUMAN_LIFE_TICK "human_life_tick"
-
 // ---- mob signals ----
 
 /// At the beginning of when an attackresults datum is being set up
@@ -118,8 +124,10 @@
 #define COMSIG_MOB_CLICK "mob_click"
 
 // ---- mob/living signals ----
-
+/// when start sprinting
 #define COMSIG_LIVING_SPRINT_START "living_sprint_start"
+/// When a Life tick occurs
+#define COMSIG_LIVING_LIFE_TICK "human_life_tick"
 
 // ---- attack_X signals ----
 

@@ -556,19 +556,12 @@
 				else
 					DropTheThing("tool", null, 1, 1, TdurgPry)
 
-		else
-			switch(W.hit_type)
-				if (DAMAGE_BURN)
-					src.health -= W.force * 0.6
-				else
-					src.health -= W.force * 0.4
-			if (src.health <= 0)
-				..()
-				src.explode()
-				return
-			else if (W.force && src.task)
+		else if (W.force)
+			src.visible_message("<span class='alert'>[user] hits [src] with [W]!</span>")
+			if (src.task)
 				src.task.attack_response(user)
-			..()
+			. = ..()
+
 
 	proc/CheckSafety(var/obj/item/gun/energy/W, var/unsafe = 0, var/user = null)
 		if (!istype(W, /obj/item/gun/energy/egun))
@@ -4883,12 +4876,6 @@
 /obj/machinery/bot/guardbot/old/tourguide/destiny
 	name = "Mary"
 	desc = "A PR-4 Robuddy. These are pretty old, you didn't know there were any still around! This one has a little name tag on the front labeled 'Mary'."
-	botcard_access = "Staff Assistant"
-	beacon_freq = 1443
-
-/obj/machinery/bot/guardbot/old/tourguide/linemap
-	name = "Monty"
-	desc = "A PR-4 Robuddy. These are pretty old, you didn't know there were any still around! This one has a little name tag on the front labeled 'Monty'."
 	botcard_access = "Staff Assistant"
 	beacon_freq = 1443
 

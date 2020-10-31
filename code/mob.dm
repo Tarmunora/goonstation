@@ -154,6 +154,7 @@
 	var/speech_void = 0
 	var/now_pushing = null //temp. var used for Bump()
 	var/atom/movable/pushing = null //Keep track of something we may be pushing for speed reductions (GC Woes)
+	var/singing = 0 // true when last thing living mob said was sung, i.e. prefixed with "%""
 
 	var/movement_delay_modifier = 0 //Always applied.
 	var/apply_movement_delay_until = -1 //world.time at which our movement delay modifier expires
@@ -225,6 +226,11 @@
 
 	var/last_pulled_time = 0
 
+	/// How easy is it for a projectile to punch straight through the target? 0 for "never should", 100 for "always should"
+	var/piercability = 50
+	/// How much damage must a projectile do to have a chance at piercing through the mob?
+	var/pierce_threshold = 20
+
 //obj/item/setTwoHanded calls this if the item is inside a mob to enable the mob to handle UI and hand updates as the item changes to or from 2-hand
 /mob/proc/updateTwoHanded(var/obj/item/I, var/twoHanded = 1)
 	return 0 //0=couldnt do it(other hand full etc), 1=worked just fine.
@@ -247,6 +253,7 @@
 	src.lastattacked = src //idk but it fixes bug
 	render_target = "\ref[src]"
 	mob_properties = list()
+	src.AddComponent(/datum/component/mob_projectile_interaction/dense_to_projectiles, src.piercability, 1, src.pierce_threshold)
 
 /mob/proc/is_spacefaring()
 	return 0
@@ -1485,6 +1492,7 @@
 			src.take_toxin_damage(damage)
 	if (!P || !P.proj_data || !P.proj_data.silentshot)
 		src.visible_message("<span class='alert'>[src] is hit by the [P]!</span>")
+	SEND_SIGNAL(src, COMSIG_ATOM_PROJ_COLLIDE, P)
 
 	actions.interrupt(src, INTERRUPT_ATTACKED)
 	return

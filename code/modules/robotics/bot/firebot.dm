@@ -23,6 +23,7 @@
 	var/last_found = 0
 	var/last_spray = 0
 	var/setup_party = 0
+	vulnerability_burn = 0.1
 	//To-Do: Patrol the station for fires maybe??
 
 /obj/machinery/bot/firebot/party
@@ -165,17 +166,9 @@
 		if (src.health < initial(src.health))
 			src.health = initial(src.health)
 			src.visible_message("<span class='notice'>[user] repairs [src]!</span>", "<span class='notice'>You repair [src].</span>")
-	else
-		switch(W.hit_type)
-			if (DAMAGE_BURN)
-				src.health -= W.force * 0.1 //more fire resistant than other bots
-			else
-				src.health -= W.force * 0.5
-		if (src.health <= 0)
-			src.explode()
-		else if (W.force)
-			step_to(src, (get_step_away(src,user)))
-		..()
+	else if (W.force)
+		src.visible_message("<span class='alert'>[user] hits [src] with [W]!</span>")
+		. = ..()
 
 /obj/machinery/bot/firebot/process()
 	if(!src.on)

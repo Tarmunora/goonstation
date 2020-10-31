@@ -175,11 +175,9 @@
 /obj/machinery/bot/chefbot/attackby(obj/item/W as obj, mob/user as mob)
 	if (istype(W, /obj/item/card/emag))
 		emag_act(user, W)
-	else
+	else if (W.force)
 		src.visible_message("<span class='alert'>[user] hits [src] with [W]!</span>")
-		src.health -= W.force * 0.5
-		if (src.health <= 0)
-			src.explode()
+		. = ..()
 
 /obj/machinery/bot/chefbot/gib()
 	return src.explode()

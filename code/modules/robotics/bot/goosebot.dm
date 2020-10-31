@@ -60,10 +60,9 @@
 	return
 
 /obj/machinery/bot/goosebot/attackby(obj/item/W as obj, mob/user as mob)
-	src.visible_message("<span class='combat'>[user] hits [src] with [W]!</span>")
-	src.health -= W.force * 0.5
-	if (src.health <= 0)
-		src.explode()
+	if (W.force)
+		src.visible_message("<span class='alert'>[user] hits [src] with [W]!</span>")
+		. = ..()
 
 /obj/machinery/bot/goosebot/gib()
 	return src.explode()
