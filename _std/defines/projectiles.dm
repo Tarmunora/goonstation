@@ -1,3 +1,4 @@
+
 //pass flags
 #define PROJ_PASSNONE 0
 #define PROJ_PASSWALL 1
@@ -18,6 +19,7 @@
 #define PROJ_HEADON_BOUNCE 2
 #define PROJ_RAPID_HEADON_BOUNCE 3
 
+
 //Projectile obj / mob piercing flags
 /// Projectile never pierces objects and mobs
 #define PROJ_NEVER_PIERCES (1<<0)
@@ -33,3 +35,7 @@
 #define PROJ_DMG_TYPE_PIERCE_PENALTY 0.5
 /// What percent of the projectile's initial power is subtracted from the projectile's current power on pierce
 #define PROJ_PIERCE_DMG_SUBTRACTOR 0.1
+
+//default max range for 'unlimited' range projectiles
+#define PROJ_INFINITE_RANGE 500
+
