@@ -516,7 +516,10 @@
 		if(get_dist(owner, target) > 1 || target == null || owner == null || get_dist(owner,T) > 1)
 			interrupt(INTERRUPT_ALWAYS)
 			return
-
+		if(!G.setTwoHanded(TRUE))
+			boutput(owner, "<span class='alert'>You need both hands free to pin!</span>")
+			interrupt(INTERRUPT_ALWAYS)
+			return
 	onEnd()
 		..()
 		var/mob/ownerMob = owner
@@ -527,7 +530,9 @@
 
 	onInterrupt()
 		..()
-		boutput(owner, "<span class='alert'>You have been interrupted!</span>")
+		if(G?.two_handed)
+			boutput(owner, "<span class='alert'>You have been interrupted!</span>")
+			G.setTwoHanded(FALSE)
 		G = null
 		target = null
 
