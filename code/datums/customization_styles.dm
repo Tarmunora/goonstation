@@ -21,6 +21,7 @@ ABSTRACT_TYPE(/datum/customization_style/biological)
 	var/gender = 0
 	/// Which mob icon layer this should go on (under or over glasses)
 	var/default_layer = MOB_HAIR_LAYER1 //Under by default, more direct subtypes where that makes sense
+	var/valid_species = list("human")
 
 	none
 		name = "None"
@@ -722,25 +723,31 @@ ABSTRACT_TYPE(/datum/customization_style/biological)
 		hetcroR
 			name = "Heterochromia: Right"
 			id = "hetcroR"
+	lizard
+		foo
+			valid_species = list("lizard")
+			name = "lizardFoo"
+			id = "lizardFoo"
 
-proc/select_custom_style(list/datum/customization_style/customization_types, mob/living/carbon/human/user as mob)
+proc/select_custom_style(list/datum/customization_style/customization_types, mob/living/carbon/human/user as mob, mutantrace)
 	var/list/datum/customization_style/options = list()
 	for (var/datum/customization_style/styletype as anything in customization_types)
 		var/datum/customization_style/CS = new styletype
-		options[CS.name] = CS
+		if(!mutantrace || (mutantrace in CS.valid_species))
+			options[CS.name] = CS
 	var/new_style = tgui_input_list(user, "Please select style", "Style", options)
 	return options[new_style]
 
-proc/find_style_by_name(var/target_name)
+proc/find_style_by_name(var/target_name, mutantrace)
 	for (var/datum/customization_style/styletype as anything in concrete_typesof(/datum/customization_style))
 		var/datum/customization_style/CS = new styletype
-		if(CS.name == target_name)
+		if(CS.name == target_name && (!mutantrace || (mutantrace in CS.valid_species)))
 			return CS
 	return new /datum/customization_style/none
 
-proc/find_style_by_id(var/target_id)
+proc/find_style_by_id(var/target_id, mutantrace)
 	for (var/datum/customization_style/styletype as anything in concrete_typesof(/datum/customization_style))
 		var/datum/customization_style/CS = new styletype
-		if(CS.id == target_id)
+		if(CS.id == target_id && (!mutantrace || (mutantrace in CS.valid_species)))
 			return CS
 	return new /datum/customization_style/none

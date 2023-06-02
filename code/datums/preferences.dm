@@ -716,7 +716,7 @@ datum/preferences
 				switch(params["id"])
 					if ("custom1", "custom2", "custom3")
 						var/list/customization_types = concrete_typesof(/datum/customization_style) - concrete_typesof(/datum/customization_style/hair/gimmick)
-						new_style = select_custom_style(customization_types, usr)
+						new_style = select_custom_style(customization_types, usr, (src.preview.preview_thing:mutantrace?:name || "human"))
 					if ("underwear")
 						new_style = tgui_input_list(usr, "Select an underwear style", "Character Generation", underwear_styles)
 
