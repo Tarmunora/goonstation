@@ -217,7 +217,7 @@
 									 // thinks it's not a constant and refuses to work with it.
 		desc="A rather chunky cabinet for storing up to 23 active mechanic components\
 		 at once.<br>It can only be connected to external components when bolted to the floor.<br>"
-		w_class = W_CLASS_BULKY //all the weight
+		w_class = W_CLASS_GIGANTIC //Shouldn't be stored in a backpack
 		num_f_icons=3
 		density=1
 		anchored = UNANCHORED
@@ -226,6 +226,8 @@
 		light_color = list(0, 179, 255, 255)
 
 		attack_hand(mob/user)
+			if (istype(user,/mob/living/object) && user == src.loc) // prevent wacky nullspace bug
+				return
 			if(src.loc==user)
 				src.set_loc(get_turf(src))
 				user.drop_item()
@@ -233,6 +235,8 @@
 			return mouse_drop(user)
 
 		attack_self(mob/user as mob)
+			if (istype(user,/mob/living/object) && user == src.loc)
+				return
 			src.set_loc(get_turf(user))
 			user.drop_item()
 			return
@@ -611,7 +615,7 @@
 
 	attackby(obj/item/W, mob/user)
 		if(..(W, user)) return 1
-		if (istype(W, /obj/item/spacecash) && !ON_COOLDOWN(src, SEND_COOLDOWN_ID, src.cooldown_time))
+		if (istype(W, /obj/item/currency/spacecash) && !ON_COOLDOWN(src, SEND_COOLDOWN_ID, src.cooldown_time))
 			LIGHT_UP_HOUSING
 			current_buffer += W.amount
 			if (src.price <= 0)
@@ -622,7 +626,7 @@
 
 				if (current_buffer > price)
 					componentSay("Here is your change!")
-					var/obj/item/spacecash/C = new /obj/item/spacecash(user.loc, current_buffer - price)
+					var/obj/item/currency/spacecash/C = new /obj/item/currency/spacecash(user.loc, current_buffer - price)
 					user.put_in_hand_or_drop(C)
 
 				collected += price
@@ -641,7 +645,7 @@
 
 	proc/ejectmoney()
 		if (collected)
-			var/obj/item/spacecash/S = new /obj/item/spacecash
+			var/obj/item/currency/spacecash/S = new /obj/item/currency/spacecash
 			S.setup(get_turf(src), collected)
 			collected = 0
 			tooltip_rebuild = 1
