@@ -5,11 +5,6 @@
   - use standard customization_1/2/3 slots for everyone
   - deprecate special_styles, special_hair, and mutantrace_detail
 
-- Make "human" a proper mutantrace, rather than just being `null`
-  - allow all `human` mobs access to mutant-race specific vars and methods
-  - Set `var/default_mutantrace` on `mob/.../human`, so humans will return to human, monkey to monkey, etc.?
-  - less special-casing for mutant-race specific stuff
-
 ## current impl details:
 
 - Add `var/list/valid_races` to `datum/customization_style`
@@ -27,3 +22,10 @@
   - Probably want to use skin color customization for lizard skin color instead of one of the detail slots
 - Unknown issues abound 😭
 - Barber menu????
+- Random Appearance
+
+## DONE:
+- Make "human" a proper mutantrace, rather than just being `null`
+  - allow all `human` mobs access to mutant-race specific vars and methods
+  - Set `var/default_mutantrace` on `mob/.../human`, so humans will return to human, monkey to monkey, etc.?
+  - less special-casing for mutant-race specific stuff
